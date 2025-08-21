@@ -1,0 +1,607 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[108]:
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[109]:
+
+
+data = pd.read_csv("Zomato.csv", encoding ='latin-1')
+data
+
+
+# In[110]:
+
+
+data.columns
+
+
+# In[111]:
+
+
+data.info()
+
+
+# In[112]:
+
+
+data.describe()
+
+
+# In[113]:
+
+
+data.isnull().sum()
+
+
+# In[114]:
+
+
+[features for features in data.columns if data[features].isnull().sum()>0]
+
+
+# In[115]:
+
+
+sns.heatmap(data.isnull(),yticklabels=False,cbar=False,cmap='viridis')
+
+
+# In[116]:
+
+
+df = pd.read_excel("Country-Code.xlsx")
+df
+
+
+# In[117]:
+
+
+data.columns
+
+
+# In[118]:
+
+
+data1=pd.merge(data,df,on="Country Code", how='left')
+data1.head()
+
+
+# In[119]:
+
+
+data1.dtypes
+
+
+# In[120]:
+
+
+country_names = data1.Country.value_counts().index
+
+
+# In[121]:
+
+
+country_values =  data1.Country.value_counts().values
+
+
+# In[122]:
+
+
+plt.pie(country_values,labels= country_names)
+
+
+# In[123]:
+
+
+plt.pie(country_values[:3],labels= country_names[:3])
+
+
+# In[124]:
+
+
+plt.pie(country_values[:3],labels= country_names[:3], autopct='%1.2f%%')
+
+
+# In[125]:
+
+
+data1.groupby(['Aggregate rating', 'Rating color', 'Rating text']).size()
+
+
+# In[126]:
+
+
+data1.columns
+
+
+# In[127]:
+
+
+data1.groupby(['Aggregate rating', 'Rating color', 'Rating text']).size().reset_index()
+
+
+# In[128]:
+
+
+ratings = data1.groupby(['Aggregate rating', 'Rating color', 'Rating text']).size().reset_index().rename(columns={0:'Rating count'})
+
+
+# In[129]:
+
+
+ratings
+
+
+# In[130]:
+
+
+import matplotlib
+matplotlib.rcParams['figure.figsize'] =(12,6)
+sns.barplot(x="Aggregate rating",y="Rating count",data=ratings)
+
+
+# import matplotlib
+# matplotlib.rcParams['figure.figsize'] =(12,6)
+# rc Params used for increasing the size of plot
+
+# In[131]:
+
+
+sns.countplot(x="Rating color",data=ratings,palette=['white','red','orange','yellow','green','green'])
+
+
+# In[132]:
+
+
+data1.groupby( ['Aggregate rating','Country']).size().reset_index().head(5)
+
+
+# In[133]:
+
+
+data1[['Country','Currency']].groupby(['Country','Currency']).size().reset_index()
+
+
+# In[134]:
+
+
+data1.groupby(['Country','Has Online delivery']).size().reset_index()
+
+
+# In[135]:
+
+
+city_values = data1.City.value_counts().values
+city_labels = data1.City.value_counts().index
+
+
+# In[136]:
+
+
+plt.pie(city_values[:5],labels=city_labels[:5],autopct='%1.2f%%')
+
+
+# In[137]:
+
+
+data1.groupby(['Country','Cuisines']).size().reset_index().head(10)
+
+
+# In[138]:
+
+
+data['Price range']=data['Price range'].fillna(0)
+
+
+# In[139]:
+
+
+data['Price range']
+
+
+# In[140]:
+
+
+data.fillna(0)
+
+
+# In[141]:
+
+
+data['Price range'] = data['Price range'].fillna(0)
+
+
+# In[142]:
+
+
+data.groupby('Price range').mean()
+
+
+# In[143]:
+
+
+data.dropna(axis = 0, inplace = True)
+
+
+# In[62]:
+
+
+data
+
+
+# In[63]:
+
+
+data.isna().sum()
+
+
+# In[64]:
+
+
+data.dropna()
+
+
+# In[65]:
+
+
+data.fillna(0)
+
+
+# In[ ]:
+
+
+
+
+
+# In[66]:
+
+
+data['Price range '] = data['Price range'].fillna(0)
+
+
+# In[67]:
+
+
+from sklearn import preprocessing
+
+
+# In[68]:
+
+
+le = preprocessing.LabelEncoder()
+
+
+# In[69]:
+
+
+le.fit(data['Price range'])
+
+
+# In[70]:
+
+
+le.transform(data['Price range'])
+
+
+# In[71]:
+
+
+data.info()
+
+
+# In[72]:
+
+
+col = ['Restaurant ID', 'Restaurant Name', 'Country Code', 'City', 'Address',
+       'Locality', 'Locality Verbose', 'Longitude', 'Latitude', 'Cuisines',
+       'Average Cost for two', 'Currency', 'Has Table booking',
+       'Has Online delivery', 'Is delivering now', 'Switch to order menu','Rating color','Rating text']
+
+
+# In[73]:
+
+
+for cols in col:
+    le.fit(data[cols])
+    data[cols] = le.transform(data[cols])
+
+
+# In[74]:
+
+
+data
+
+
+# In[75]:
+
+
+X = data.drop('Price range ', axis=1)
+X
+
+
+# In[76]:
+
+
+Y = data['Price range']
+Y.value_counts()
+
+
+# In[77]:
+
+
+from sklearn.preprocessing import MinMaxScaler
+
+
+# In[78]:
+
+
+sc = MinMaxScaler()
+
+
+# In[79]:
+
+
+sc.fit(X)
+
+
+# In[80]:
+
+
+X = sc.transform(X)
+
+
+# In[81]:
+
+
+X
+
+
+# In[82]:
+
+
+X.shape
+
+
+# In[83]:
+
+
+from sklearn.model_selection import train_test_split
+
+
+# In[84]:
+
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.33, random_state = 22)
+
+
+# In[85]:
+
+
+X_train.shape
+
+
+# In[86]:
+
+
+X_test.shape
+
+
+# In[87]:
+
+
+Y_train.shape
+
+
+# In[88]:
+
+
+Y_test.shape
+
+
+# In[89]:
+
+
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+
+
+# In[90]:
+
+
+from sklearn.cluster import KMeans 
+from sklearn.datasets import make_blobs 
+
+
+# In[91]:
+
+
+np.random.seed(0)
+
+
+# In[92]:
+
+
+X, y = make_blobs(n_samples=5000, centers=[[4,4], [-2, -1], [2, -3], [1, 1]], cluster_std=0.9)
+
+
+# In[93]:
+
+
+plt.scatter(X[:, 0], X[:, 1], marker='.')
+
+
+# In[94]:
+
+
+k_means = KMeans(init = "k-means++", n_clusters = 4, n_init = 12)
+
+
+# In[95]:
+
+
+k_means.fit(X)
+
+
+# In[96]:
+
+
+k_means_labels = k_means.labels_
+k_means_labels
+
+
+# In[97]:
+
+
+k_means_cluster_centers = k_means.cluster_centers_
+k_means_cluster_centers
+
+
+# In[98]:
+
+
+# Initialize the plot with the specified dimensions.
+fig = plt.figure(figsize=(6, 4))
+
+# Colors uses a color map, which will produce an array of colors based on
+# the number of labels there are. We use set(k_means_labels) to get the
+# unique labels.
+colors = plt.cm.Spectral(np.linspace(0, 1, len(set(k_means_labels))))
+
+# Create a plot
+ax = fig.add_subplot(1, 1, 1)
+
+# For loop that plots the data points and centroids.
+# k will range from 0-3, which will match the possible clusters that each
+# data point is in.
+for k, col in zip(range(len([[4,4], [-2, -1], [2, -3], [1, 1]])), colors):
+
+    # Create a list of all data points, where the data points that are 
+    # in the cluster (ex. cluster 0) are labeled as true, else they are
+    # labeled as false.
+    my_members = (k_means_labels == k)
+    
+    # Define the centroid, or cluster center.
+    cluster_center = k_means_cluster_centers[k]
+    
+    # Plots the datapoints with color col.
+    ax.plot(X[my_members, 0], X[my_members, 1], 'w', markerfacecolor=col, marker='.')
+    
+    # Plots the centroids with specified color, but with a darker outline
+    ax.plot(cluster_center[0], cluster_center[1], 'o', markerfacecolor=col,  markeredgecolor='k', markersize=6)
+
+# Title of the plot
+ax.set_title('KMeans')
+
+# Remove x-axis ticks
+ax.set_xticks(())
+
+# Remove y-axis ticks
+ax.set_yticks(())
+
+# Show the plot
+plt.show()
+
+
+# In[99]:
+
+
+cust_data = pd.read_csv("Zomato.csv", encoding="latin-1")
+
+
+# In[100]:
+
+
+data = cust_data.drop('Price range', axis=1)
+data.head()
+
+
+# In[101]:
+
+
+from sklearn.neighbors import KNeighborsClassifier
+
+
+# In[102]:
+
+
+k = 4
+#Train Model and Predict  
+neigh = KNeighborsClassifier(n_neighbors = k).fit(X_train,Y_train)
+neigh
+
+
+# In[103]:
+
+
+yhat = neigh.predict(X_test)
+yhat[0:5]
+
+
+# In[104]:
+
+
+from sklearn import metrics
+print("Train set Accuracy: ", metrics.accuracy_score(Y_train, neigh.predict(X_train)))
+print("Test set Accuracy: ", metrics.accuracy_score(Y_test, yhat))
+
+
+# In[105]:
+
+
+Ks = 10
+mean_acc = np.zeros((Ks-1))
+std_acc = np.zeros((Ks-1))
+
+for n in range(1,Ks):
+    
+    #Train Model and Predict  
+    neigh = KNeighborsClassifier(n_neighbors = n).fit(X_train,Y_train)
+    yhat=neigh.predict(X_test)
+    mean_acc[n-1] = metrics.accuracy_score(Y_test, yhat)
+
+    
+    std_acc[n-1]=np.std(yhat==Y_test)/np.sqrt(yhat.shape[0])
+
+mean_acc
+
+
+# In[106]:
+
+
+plt.plot(range(1,Ks),mean_acc,'g')
+plt.fill_between(range(1,Ks),mean_acc - 1 * std_acc,mean_acc + 1 * std_acc, alpha=0.10)
+plt.fill_between(range(1,Ks),mean_acc - 3 * std_acc,mean_acc + 3 * std_acc, alpha=0.10,color="green")
+plt.legend(('Accuracy ', '+/- 1xstd','+/- 3xstd'))
+plt.ylabel('Accuracy ')
+plt.xlabel('Number of Neighbors (K)')
+plt.tight_layout()
+plt.show()
+
+
+# In[107]:
+
+
+print( "The best accuracy was with", mean_acc.max(), "with k=", mean_acc.argmax()+1) 
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
